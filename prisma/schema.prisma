@@ -1,0 +1,93 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  user
+  admin
+}
+
+enum GameMode {
+  ludo
+  ladder
+}
+
+enum MatchType {
+  ai
+  online
+  pass_and_play
+}
+
+model User {
+  id                   String             @id @default(uuid())
+  email                String             @unique
+  username             String
+  passwordHash         String
+  avatar               String             @default("avatar-knight")
+  role                 Role               @default(user)
+  coins                Int                @default(1000)
+  gems                 Int                @default(50)
+  gamesPlayed          Int                @default(0)
+  wins                 Int                @default(0)
+  losses               Int                @default(0)
+  ludoWins             Int                @default(0)
+  ladderWins           Int                @default(0)
+  inventoryBoards      String[]           @default(["classic"])
+  inventoryTokens      String[]           @default(["classic"])
+  activeBoard          String             @default("classic")
+  activeToken          String             @default("classic")
+  lastDailyRewardClaim DateTime?
+  loginStreak          Int                @default(1)
+  isBanned             Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  matchParticipants    MatchParticipant[]
+  wonMatches           MatchHistory[]     @relation("MatchWinner")
+
+  @@index([email])
+  @@index([role])
+}
+
+model MatchHistory {
+  id           String             @id @default(uuid())
+  roomCode     String
+  gameMode     GameMode
+  matchType    MatchType
+  rewardPool   Int                @default(0)
+  winnerId     String
+  winner       User               @relation("MatchWinner", fields: [winnerId], references: [id])
+  participants MatchParticipant[]
+  endedAt      DateTime           @default(now())
+  createdAt    DateTime           @default(now())
+
+  @@index([winnerId])
+}
+
+model MatchParticipant {
+  id        String       @id @default(uuid())
+  matchId   String
+  match     MatchHistory @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  color     String
+  rank      Int          @default(0)
+  coinsWon  Int          @default(0)
+
+  @@index([matchId])
+  @@index([userId])
+}
+
+model EconomyConfig {
+  id                 Int      @id @default(1)
+  dailyRewardCoins   Int      @default(250)
+  dailyRewardGems    Int      @default(10)
+  starterCoins       Int      @default(1000)
+  starterGems        Int      @default(50)
+  winBonusMultiplier Float    @default(1.8)
+  updatedAt          DateTime @updatedAt
+}

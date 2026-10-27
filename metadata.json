@@ -1,0 +1,6 @@
+{
+  "name": "Ludo & Ladder Chase",
+  "description": "Real-time multiplayer board game featuring Classic Ludo and Ladder Chase (Snakes & Chutes twist) with AI, room sharing, rewards, and admin dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
